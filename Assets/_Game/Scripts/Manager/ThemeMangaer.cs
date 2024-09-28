@@ -8,68 +8,117 @@ public class ThemeMangaer : Singleton<ThemeMangaer>
 {
     [SerializeField] private GameObject homeCanvas;
     [SerializeField] private GameObject playCanvas;
-    [SerializeField] private GameObject pauseCanvas;
-    [SerializeField] private Sprite sprite1;
-    [SerializeField] private Sprite sprite2;
-    [SerializeField] private Sprite sprite3;
-    [SerializeField] private Sprite sprite4;
+    [SerializeField] private GameObject themeCanvas;
+    [SerializeField] private GameObject shopCanvas;
 
-    [SerializeField] private Button w1Btn;
-    [SerializeField] private Button w2Btn;
-    [SerializeField] private Button w3Btn;
-    [SerializeField] private Button w4Btn;
+    [SerializeField] private ThemeSO themeSO;
+    [SerializeField] private TextMeshProUGUI themeTMP;
 
+    [SerializeField] private Image W;
+    [SerializeField] private Button buyBtn;
+    [SerializeField] private Button equidBtn;
+    [SerializeField] private Button equidedBtn;
+    [SerializeField] private Button previousBtn;
+    [SerializeField] private Button nextBtn;
+    [SerializeField] private Button escBtb;
+    [SerializeField] private int max;
+
+    private int index;
+
+    public GameObject HomeCanvas { get => homeCanvas; set => homeCanvas = value; }
+    public GameObject PlayCanvas { get => playCanvas; set => playCanvas = value; }
+    public GameObject ThemeCanvas { get => themeCanvas; set => themeCanvas = value; }
+    public ThemeSO ThemeSO { get => themeSO; set => themeSO = value; }
+    public GameObject ShopCanvas { get => shopCanvas; set => shopCanvas = value; }
     private void Start()
     {
-        w1Btn.onClick.AddListener(OnClickW1Btn);
-        w2Btn.onClick.AddListener(OnClickW2Btn);
-        w3Btn.onClick.AddListener(OnClickW3Btn);
-        w4Btn.onClick.AddListener(OnClickW4Btn);
+        index = DataManager.Instance.dataDynamic.currentTheme;
+        ChangeTheme();
+        ChangeThemeInTheme();
+        OnEquipedBtn();
+        escBtb.onClick.AddListener(OnClickEcsBtn);
+        previousBtn.onClick.AddListener(OnClickPreviousBtn);
+        nextBtn.onClick.AddListener(OnClickNextBtn);
+        buyBtn.onClick.AddListener(OnClickBuyBtn);
+        equidBtn.onClick.AddListener(OnClickEquipBtn);
     }
-
-    public void OnClickW1Btn()
+    public void OnClickBuyBtn()
     {
-        homeCanvas.GetComponent<Image>().sprite = sprite1;
-        playCanvas.GetComponent<Image>().sprite = sprite1;
-        playCanvas.GetComponent<Image>().sprite = sprite1;
-
-        w1Btn.GetComponent<Image>().color = Color.green;
-        w2Btn.GetComponent<Image>().color = Color.white;
-        w3Btn.GetComponent<Image>().color = Color.white;
-        w4Btn.GetComponent<Image>().color = Color.white;
+        if(DataManager.Instance.dataDynamic.currentDynament>= 150)
+        {
+            OnEquipBtn();
+            DataManager.Instance.dataDynamic.buyingSatus[index] = BuyingStatus.BUY;
+            DataManager.Instance.dataDynamic.currentDynament -= 150;
+            UIManager.Instance.UpdateScoreDyamon();
+        }
     }
-    public void OnClickW2Btn()
+    public void OnClickEquipBtn()
     {
-        homeCanvas.GetComponent<Image>().sprite = sprite2;
-        playCanvas.GetComponent<Image>().sprite = sprite2;
-        pauseCanvas.GetComponent<Image>().sprite = sprite2;
-
-        w1Btn.GetComponent<Image>().color = Color.white;
-        w2Btn.GetComponent<Image>().color = Color.green;
-        w3Btn.GetComponent<Image>().color = Color.white;
-        w4Btn.GetComponent<Image>().color = Color.white;
+        DataManager.Instance.dataDynamic.currentTheme = index;
+        ChangeTheme();
+        OnEquipedBtn();
     }
-    public void OnClickW3Btn()
+    public void OnClickEcsBtn()
     {
-        homeCanvas.GetComponent<Image>().sprite = sprite3;
-        playCanvas.GetComponent<Image>().sprite = sprite3;
-        pauseCanvas.GetComponent<Image>().sprite = sprite3;
-
-        w1Btn.GetComponent<Image>().color = Color.white;
-        w2Btn.GetComponent<Image>().color = Color.white;
-        w3Btn.GetComponent<Image>().color = Color.green;
-        w4Btn.GetComponent<Image>().color = Color.white;
+        homeCanvas.SetActive(true);
+        themeCanvas.SetActive(false);
     }
-    public void OnClickW4Btn()
+    public void OnClickNextBtn()
     {
-        homeCanvas.GetComponent<Image>().sprite = sprite4;
-        playCanvas.GetComponent<Image>().sprite = sprite4;
-        pauseCanvas.GetComponent<Image>().sprite = sprite4;
+        index++;
+        if (index > max) index = 0;
+        ChangeThemeInTheme();
+        ShowBuyingStatus();
+    }
+    public void ShowBuyingStatus()
+    {
+        if (index == DataManager.Instance.dataDynamic.currentTheme) OnEquipedBtn() ;
+        else
+        {
+            if (DataManager.Instance.dataDynamic.buyingSatus[index] == BuyingStatus.BUY) OnEquipBtn();
+            else OnBuybtn();
+        }
+    }
+    public void OnBuybtn()
+    {
+        buyBtn.gameObject.SetActive(true);
+        equidBtn.gameObject.SetActive(false);
+        equidedBtn.gameObject.SetActive(false);
+    }
+    public void OnEquipBtn()
+    {
 
-        w1Btn.GetComponent<Image>().color = Color.white;
-        w2Btn.GetComponent<Image>().color = Color.white;
-        w3Btn.GetComponent<Image>().color = Color.white;
-        w4Btn.GetComponent<Image>().color = Color.green;
+        buyBtn.gameObject.SetActive(false);
+        equidBtn.gameObject.SetActive(true);
+        equidedBtn.gameObject.SetActive(false);
+    }
+    public void OnEquipedBtn()
+    {
+
+        buyBtn.gameObject.SetActive(false);
+        equidBtn.gameObject.SetActive(false);
+        equidedBtn.gameObject.SetActive(true);
+    }
+    public void OnClickPreviousBtn()
+    {
+        index--;
+        if (index < 0) index = max;
+        ChangeThemeInTheme();
+        ShowBuyingStatus();
     }
 
+
+    public void ChangeThemeInTheme()
+    {
+        W.sprite = themeSO.listTheme[index].themeSprite;
+        themeTMP.text = themeSO.listTheme[index].themeName;
+    }
+
+    public void ChangeTheme()
+    {
+        HomeCanvas.GetComponent<Image>().sprite = ThemeSO.listTheme[index].themeSprite;
+        PlayCanvas.GetComponent<Image>().sprite = ThemeSO.listTheme[index].themeSprite;
+        ThemeCanvas.GetComponent<Image>().sprite = ThemeSO.listTheme[index].themeSprite;
+        ShopCanvas.GetComponent<Image>().sprite = ThemeSO.listTheme[index].themeSprite;
+    }
 }
